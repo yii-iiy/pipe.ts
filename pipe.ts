@@ -1,3 +1,30 @@
+const memoize = 
+<T extends (...args: any[]) => any>(fn: T)
+: T => 
+{
+    const cache: Record<string, ReturnType<T>> = {};
+
+    return ((...args: Parameters<T>)
+    : ReturnType<T> => 
+    {
+        const key = JSON.stringify(args) ;
+        if (!(key in cache)) 
+        { cache[key] = fn(...args); } ;
+        return cache[key] ;
+    }) as T ;
+} ;
+
+const fib = memoize((n: number): number => (n <= 1 ? n : fib(n - 1) + fib(n - 2)) ) ;
+console.log(fib(40)) ;
+console.log(fib(40)) ;
+
+// const fsleep = (n: number): number => sleep ;
+// const memoizedFsleep = memoize(fsleep);
+
+// console.log(memoizedFsleep(40));
+// console.log(memoizedFsleep(40));
+
+
 type F<T, R> = (p: T) => R ;
 
 export 
@@ -8,38 +35,38 @@ class Pipe
     (private value: T, private fns: F<any, any>[] = []) 
     {} ;
     
-    then
-    <R>(fn: F<T, R>)
-    : Pipe<R> 
+    then = 
+    <R,>(fn: F<T, R>)
+    : Pipe<R> => 
     {
         this.fns.push(fn);
         return (this as unknown) as Pipe<R> ;
     } ;
     
-    private runfn
-    ()
-    : T 
-    {
-        return this
-            .fns
-            .reduce
-            (
-                (result, fn) => 
-                    fn(result), this.value
-            ) ;
-    } ;
+    private static piperun = memoize
+    (
+        <T,> (fs: F<any, any>[], v: T)
+        : T => 
+            fs.reduce((r, f) => f(r), v)
+    ) ;
     
-    run
+    private runfn = 
     ()
-    : Pipe<T> 
-    {
-        return new Pipe(this.runfn()) ;
-    } ;
+    : T => 
+        
+        Pipe.piperun(this.fns, this.value) ;
+    
+    run = 
+    ()
+    : Pipe<T> => 
+        
+        new Pipe(this.runfn()) ;
+    
     
     pop(): T ;
     pop<R>(fn: F<T, R>): Pipe<T> ;
     pop
-    <R>
+    <R,>
     (fn?: F<T, R>)
     : T | Pipe<T> 
     {
@@ -54,9 +81,6 @@ class Pipe
     } ;
 } ;
 
-
-// use
-
 var y, z;
 const result = new Pipe(1)
     .then(x => x + 1)
@@ -69,9 +93,9 @@ const result = new Pipe(1)
     .pop(x => (y = x + 1))
     .pop(x => (z = x + 1))
     .then(x => x + "c")
-    .run()
+    // .run()
     .pop();
 
-console.log(result); // "450c"
-console.log(y); // "4501"
-console.log(z); // "4501"
+console.log(result);
+console.log(y);
+console.log(z);
