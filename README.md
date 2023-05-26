@@ -26,3 +26,7 @@ console.log(result); // "450c"
 console.log(y); // "4501"
 console.log(z); // "4501"
 ~~~
+
+- `pop` 用于取值
+- `then` 用于添加逻辑
+- `run` 用于触发逻辑执行
