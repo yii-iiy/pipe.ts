@@ -4,6 +4,8 @@
 🐚 pipe like promise for TS 🍥
 ~~~
 
+**🐌 Moved into [*fp.ts*](../../../fp.ts) 🐌**
+
 test: 
 
 ~~~ ts
